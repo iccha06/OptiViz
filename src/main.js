@@ -1,8 +1,8 @@
 import { SURFACES, getSurface } from "./surfaces.js";
 import { FUNCTIONS_1D, getFunction1D } from "./functions1d.js";
 import { LP_PROBLEMS, getLPProblem } from "./lpProblems.js";
-import { gradientDescent } from "./algorithms/gradientDescent.js";
-import { newtonRaphson } from "./algorithms/newtonRaphson.js";
+import { gradientDescent } from "./algorithms/GradientDescent.js";
+import { newtonRaphson } from "./algorithms/NewtonRaphson.js";
 import { newtonMethod2D } from "./algorithms/newtonMethod2D.js";
 import { simplex } from "./algorithms/simplex.js";
 import { Engine } from "./engine.js";
