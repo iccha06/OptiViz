@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descent — Numerical Methods Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <h1>Descent</h1>
+    <span class="eyebrow">Numerical Methods Lab</span>
+  </div>
+  <div class="readout" id="readout-row">
+    <span>iteration <b id="readout-step">0</b></span>
+    <span><span id="readout-val-label">f(x, y) =</span> <b id="readout-val">—</b></span>
+    <span id="readout-grad-wrap">‖∇f‖ = <b id="readout-grad">—</b></span>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+
+    <div class="field-group">
+      <label class="field-label">Algorithm</label>
+      <select id="algo-select">
+        <option value="gradientDescent">Gradient Descent</option>
+        <option value="newtonMethod2D">Newton's Method (2D)</option>
+        <option value="newtonRaphson">Newton-Raphson (1D root-finding)</option>
+        <option value="simplex">Simplex Method</option>
+        <option value="compare">Compare: Side-by-Side</option>
+      </select>
+    </div>
+
+    <div id="gd-controls">
+      <div class="field-group">
+        <label class="field-label">Surface</label>
+        <select id="fn-select">
+          <option value="bowl">Bowl — x² + y²</option>
+          <option value="saddle">Saddle — x² − y²</option>
+          <option value="rosenbrock">Rosenbrock valley</option>
+        </select>
+      </div>
+
+      <div class="field-group" style="margin-top: 22px;">
+        <label class="field-label">Learning rate <span class="val" id="lr-val">0.10</span></label>
+        <input type="range" id="lr-slider" min="0.001" max="1" step="0.001" value="0.1">
+      </div>
+    </div>
+
+    <div id="newton-controls" style="display:none;">
+      <div class="field-group">
+        <label class="field-label">Function f(x)</label>
+        <select id="fn1d-select">
+          <option value="cubic">x³ − x − 2</option>
+          <option value="cosMinusX">cos(x) − x</option>
+          <option value="quintic">x⁵ − 3x + 1 (flat-tangent trap)</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="lp-controls" style="display:none;">
+      <div class="field-group">
+        <label class="field-label">Linear program</label>
+        <select id="lp-select">
+          <option value="classic">max 3x + 5y</option>
+          <option value="furniture">max 5x + 4y</option>
+          <option value="diet">max 2x + 3y</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="compare-controls" style="display:none;">
+      <div class="field-group">
+        <label class="field-label">Surface</label>
+        <select id="compare-fn-select">
+          <option value="bowl">Bowl — x² + y²</option>
+          <option value="saddle">Saddle — x² − y²</option>
+          <option value="rosenbrock">Rosenbrock valley</option>
+        </select>
+      </div>
+
+      <div class="field-group" style="margin-top: 22px;">
+        <label class="field-label" style="color: var(--accent);">Run A</label>
+        <select id="compare-a-algo">
+          <option value="gradientDescent">Gradient Descent</option>
+          <option value="newtonMethod2D">Newton's Method (2D)</option>
+        </select>
+      </div>
+      <div class="field-group" id="compare-a-lr-group" style="margin-top: 8px;">
+        <label class="field-label">Learning rate <span class="val" id="compare-a-lr-val">0.10</span></label>
+        <input type="range" id="compare-a-lr-slider" min="0.001" max="1" step="0.001" value="0.1">
+      </div>
+
+      <div class="field-group" style="margin-top: 22px;">
+        <label class="field-label" style="color: #a78bfa;">Run B</label>
+        <select id="compare-b-algo">
+          <option value="gradientDescent">Gradient Descent</option>
+          <option value="newtonMethod2D" selected>Newton's Method (2D)</option>
+        </select>
+      </div>
+      <div class="field-group" id="compare-b-lr-group" style="margin-top: 8px; display:none;">
+        <label class="field-label">Learning rate <span class="val" id="compare-b-lr-val">0.10</span></label>
+        <input type="range" id="compare-b-lr-slider" min="0.001" max="1" step="0.001" value="0.1">
+      </div>
+      <div class="field-group" style="margin-top: 22px;">
+        <label class="field-label">View</label>
+        <div class="btn-row">
+          <button type="button" class="toggle-btn active" id="view-trace-btn">Trace</button>
+          <button type="button" class="toggle-btn" id="view-convergence-btn">Convergence Rate</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Speed <span class="val" id="speed-val">5</span></label>
+      <input type="range" id="speed-slider" min="1" max="20" step="1" value="5">
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-play" class="primary">Run</button>
+      <button id="btn-step">Step</button>
+    </div>
+    <div class="btn-row">
+      <button id="btn-back">◂ Back</button>
+      <button id="btn-reset">Reset</button>
+    </div>
+
+    <div class="status-line" id="status">Click the surface to set a starting point.</div>
+
+    <div class="compare-stats" id="compare-stats" style="display:none;">
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th><span class="dot orange"></span><span id="compare-a-label">Gradient Descent</span></th>
+            <th><span class="dot violet"></span><span id="compare-b-label">Newton's Method (2D)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="metric-name">Iterations</td>
+            <td id="compare-a-step">0</td>
+            <td id="compare-b-step">0</td>
+          </tr>
+          <tr>
+            <td class="metric-name">Function Value</td>
+            <td id="compare-a-val">—</td>
+            <td id="compare-b-val">—</td>
+          </tr>
+          <tr>
+            <td class="metric-name">Gradient Norm</td>
+            <td id="compare-a-grad">—</td>
+            <td id="compare-b-grad">—</td>
+          </tr>
+          <tr>
+            <td class="metric-name">Status</td>
+            <td id="compare-a-status" class="metric-status">Running</td>
+            <td id="compare-b-status" class="metric-status">Running</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="race-result" id="race-result" style="display:none;">
+        <div class="race-result-title">🏁 Race Finished</div>
+        <div class="race-result-winner" id="race-winner">Winner: —</div>
+        <div class="race-result-grid" id="race-grid"></div>
+      </div>
+    </div>
+
+    <div class="hint">
+      <b>How this works:</b> each algorithm lives in <code>src/algorithms/</code> as a JS generator that yields one step at a time. <code>src/engine.js</code> buffers history so you can scrub back and forth; <code>src/render.js</code> just draws whatever step the engine is on. Compare mode runs two Engine instances at once on the same surface. See the README for how to add the next one.
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="plot" width="640" height="640"></canvas>
+    <div class="canvas-caption" id="canvas-caption">click surface to place start &nbsp;·&nbsp; contour lines = equal elevation</div>
+
+    <div class="convergence-panel" id="convergence-panel" style="display:none;">
+      <div class="convergence-col">
+        <div class="convergence-col-title"><span class="dot orange"></span><span id="conv-a-label">Gradient Descent</span></div>
+        <div class="convergence-row"><span>Iterations</span><b id="conv-a-iters">—</b></div>
+        <div class="convergence-row"><span>Final ‖∇f‖</span><b id="conv-a-final">—</b></div>
+        <div class="convergence-row"><span>Convergence</span><b id="conv-a-order">—</b></div>
+      </div>
+      <div class="convergence-divider"></div>
+      <div class="convergence-col">
+        <div class="convergence-col-title"><span class="dot violet"></span><span id="conv-b-label">Newton's Method (2D)</span></div>
+        <div class="convergence-row"><span>Iterations</span><b id="conv-b-iters">—</b></div>
+        <div class="convergence-row"><span>Final ‖∇f‖</span><b id="conv-b-final">—</b></div>
+        <div class="convergence-row"><span>Convergence</span><b id="conv-b-order">—</b></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
