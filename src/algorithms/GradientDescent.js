@@ -6,10 +6,13 @@ export function* gradientDescent(surface, start, learningRate, maxSteps = 500) {
     const [gx, gy] = surface.grad(x, y);
     const gradNorm = Math.hypot(gx, gy);
 
-    yield { step, x, y, z, gx, gy, gradNorm };
+    let status = "running";
+    if (gradNorm < 1e-4) status = "converged";
+    else if (!isFinite(z) || Math.abs(x) > 1e6 || Math.abs(y) > 1e6) status = "diverged";
 
-    if (gradNorm < 1e-4) return; // converged
-    if (!isFinite(z) || Math.abs(x) > 1e6 || Math.abs(y) > 1e6) return; // diverged
+    yield { step, x, y, z, gx, gy, gradNorm, status };
+
+    if (status !== "running") return;
 
     x = x - learningRate * gx;
     y = y - learningRate * gy;

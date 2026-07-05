@@ -5,14 +5,14 @@ export function* newtonRaphson(fn, start, maxSteps = 40) {
     const fx = fn.f(x);
     const fpx = fn.fprime(x);
 
-    yield { step, x, fx, fpx };
+    let status = "running";
+    if (Math.abs(fx) < 1e-6) status = "converged";
+    else if (!isFinite(fx) || !isFinite(fpx) || Math.abs(fpx) < 1e-8 || Math.abs(x) > 1e6) status = "diverged";
 
-    if (Math.abs(fx) < 1e-6) return; // converged: found a root
-    if (Math.abs(fpx) < 1e-8) return; // diverged: tangent went flat, division blows up
+    yield { step, x, fx, fpx, status };
 
-    const xNext = x - fx / fpx;
-    if (!isFinite(xNext) || Math.abs(xNext) > 1e6) return; // diverged: shot off to infinity
+    if (status !== "running") return;
 
-    x = xNext;
+    x = x - fx / fpx;
   }
 }

@@ -32,24 +32,23 @@ export class Engine {
 
   /** Advance one step. Returns true if a new/buffered state was shown, false if already finished. */
   advance() {
-    if (this.cursor < this.history.length - 1) {
-      // replaying buffered steps (e.g. after stepping back) — no need to call gen again
-      this.cursor++;
-      return true;
-    }
-    if (this.finished) return false;
-
-    const { value, done } = this.gen.next();
-    if (done) {
-      this.finished = true;
-      const last = this.history[this.history.length - 1];
-      this.finishReason = last && last.gradNorm < 1e-4 ? "converged" : "diverged";
-      return false;
-    }
-    this.history.push(value);
+  if (this.cursor < this.history.length - 1) {
     this.cursor++;
     return true;
   }
+  if (this.finished) return false;
+
+  const { value, done } = this.gen.next();
+  if (done) {
+    this.finished = true;
+    const last = this.history[this.history.length - 1];
+    this.finishReason = last && last.status === "converged" ? "converged" : "diverged";
+    return false;
+  }
+  this.history.push(value);
+  this.cursor++;
+  return true;
+}
 
   stepBack() {
     if (this.cursor > 0) {
